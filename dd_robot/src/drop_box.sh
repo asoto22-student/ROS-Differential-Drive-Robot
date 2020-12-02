@@ -1,0 +1,1 @@
+rosrun gazebo_ros spawn_model -file ../models/box.sdf -sdf -z 5 -x $2 -y $3 -model $1
