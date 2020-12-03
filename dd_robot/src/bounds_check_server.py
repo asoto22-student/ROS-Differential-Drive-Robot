@@ -30,7 +30,7 @@ def trigger_response(request):
 
     if (b != None):
         if (not checkBoxLocation(b[0],b[1])):
-            dropBox(b[0], b[1])
+            dropBox(int(b[0]), int(b[1]))
             dropBoxBool = True
     
     return TriggerResponse(
@@ -57,17 +57,23 @@ def saveBoxVal(x, y):
 
 def checkBoxLocation(x, y):
     global box_x, box_y
-    ret = True
+    ret = False
+
+    print("X Locations:", box_x)
+    print("Y Locations:", box_y)
+
     for i in range(len(box_x)):
         xx = box_x[i]
         yy = box_y[i]
         d = np.sqrt((xx-x)*(xx-x) + (yy-y)*(yy-y))
         if d < 1.0:
-            return False
+            return True
+    return False
 
 def dropBox(x,y):
     global box_i
     saveBoxVal(x,y)
+
     b0 = "./drop_box.sh "
     b1 = name + str(box_i) + " "
     box_i += 1
@@ -87,11 +93,15 @@ def getBoxLocation(x,y):
     dist = np.sqrt( (x-x0) * (x-x0)  + (y-y0)*(y-y0) )
 
     #rospy.loginfo("Dist = ", str(dist))
-    print("Dist = ", str(dist))
+    #print("Dist = ", str(dist))
+    print("X =", x, "Y =", y, "Max Distance =", max_distance)
 
-    if (dist < (max_distance-2) ):
+    #if (dist < (max_distance-2) ):
+    if ((np.abs(x) < (max_distance - 2)) and (np.abs(y) < (max_distance - 2))):
+        print("Inside")
         return None
     else:
+        print("Outside")
         theta = np.arctan2(y,x)
         R = max_distance
         xn = np.cos(theta)*R
@@ -106,8 +116,8 @@ def getRobotLocation():
     a.model_name = 'dd_robot'
     s = robot_proxy(a)
     
-    print(a)
-    print(s)
+    #print(a)
+    #print(s)
 
     x = s.pose.position.x
     y = s.pose.position.y

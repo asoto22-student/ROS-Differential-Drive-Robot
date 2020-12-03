@@ -72,7 +72,7 @@ try:
         else:
             key2ros(0, 0, "Stopping")
 
-        screen.move(15, 0)
+        #screen.move(15, 0)
 finally:
     curses.nocbreak()
     curses.echo()
