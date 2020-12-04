@@ -12,6 +12,8 @@ move_vect = Twist()
 movement_speed = 1.0
 movement_increment = 0.1
 
+max_speed = 1
+
 # Curses Init
 screen = curses.initscr()
 curses.noecho()
@@ -61,13 +63,13 @@ try:
             key2ros(-movement_speed, 0, "Turning right")
         elif char == ord('i'):
             movement_speed += movement_increment
-            if (movement_speed > 1):
-                movement_speed = 1
+            if (movement_speed > max_speed):
+                movement_speed = max_speed
             screen.addstr(14, 15, str(movement_speed))
         elif char == ord('k'):
             movement_speed -= movement_increment
-            if (movement_speed < 0.1):
-                movement_speed = 0.1
+            if (movement_speed < movement_increment):
+                movement_speed = movement_increment
             screen.addstr(14, 15, str(movement_speed))
         else:
             key2ros(0, 0, "Stopping")

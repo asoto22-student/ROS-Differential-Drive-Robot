@@ -11,7 +11,8 @@ from std_srvs.srv import Trigger, TriggerResponse
 name = 'box'
 box_i = 0
 
-max_distance = 10
+max_distance = 50
+error_dist = 1.5
 
 #robot_proxy = None
 
@@ -29,7 +30,7 @@ def trigger_response(request):
     b = getBoxLocation(x,y)
 
     if (b != None):
-        if (not checkBoxLocation(b[0],b[1])):
+        if (not checkBoxLocation(int(b[0]),int(b[1]))):
             dropBox(int(b[0]), int(b[1]))
             dropBoxBool = True
     
@@ -59,20 +60,33 @@ def checkBoxLocation(x, y):
     global box_x, box_y
     ret = False
 
-    print("X Locations:", box_x)
-    print("Y Locations:", box_y)
+    if (x >= (max_distance - error_dist)):
+        x = max_distance
+    elif (x <= (error_dist - max_distance)):
+        x = -max_distance
+    if (x >= (max_distance - error_dist)):
+        x = max_distance
+    elif (x <= (error_dist - max_distance)):
+        x = -max_distance
 
-    for i in range(len(box_x)):
+    print("Box X Locations:", box_x)
+    print("Box Y Locations:", box_y)
+    print("Robot X Locations:", x)
+    print("Robot Y Locations:", y)
+
+    for i in range(box_i):
         xx = box_x[i]
         yy = box_y[i]
-        d = np.sqrt((xx-x)*(xx-x) + (yy-y)*(yy-y))
-        if d < 1.0:
+        #d = np.sqrt((xx-x)*(xx-x) + (yy-y)*(yy-y))
+        #if d < 1.0:
+        if (x == box_x[i] and y == box_y[i]):
             return True
     return False
 
 def dropBox(x,y):
     global box_i
-    saveBoxVal(x,y)
+
+    saveBoxVal(x, y)
 
     b0 = "./drop_box.sh "
     b1 = name + str(box_i) + " "
@@ -97,15 +111,25 @@ def getBoxLocation(x,y):
     print("X =", x, "Y =", y, "Max Distance =", max_distance)
 
     #if (dist < (max_distance-2) ):
-    if ((np.abs(x) < (max_distance - 2)) and (np.abs(y) < (max_distance - 2))):
+    if ((np.abs(x) < (max_distance - error_dist)) and (np.abs(y) < (max_distance - error_dist))):
         print("Inside")
         return None
     else:
         print("Outside")
-        theta = np.arctan2(y,x)
-        R = max_distance
-        xn = np.cos(theta)*R
-        yn = np.sin(theta)*R
+        xn = x
+        yn = y
+
+        if (xn >= (max_distance - error_dist)):
+            xn = max_distance
+        elif (xn <= (error_dist - max_distance)):
+            xn = -max_distance
+        if (yn >= (max_distance - error_dist)):
+            yn = max_distance
+        elif (yn <= (error_dist - max_distance)):
+            yn = -max_distance
+        
+        print('x:', x, 'y:', y, 'xn:', xn, 'yn:', yn)
+        
         return (xn, yn)
 
     return
@@ -125,7 +149,7 @@ def getRobotLocation():
     return (x,y)
 
 rospy.init_node('bounds_server')
-#delBoxAll(255)
+delBoxAll(10)
 
 my_service = rospy.Service('/box', Trigger, trigger_response)
 rospy.wait_for_service('/gazebo/get_model_state')
